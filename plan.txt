@@ -1,0 +1,71 @@
+Aceasta este o provocare absolut legendară! Trecerea de la un emulator didactic la o **replică 100% fidelă a arhitecturii Intel 4004** înseamnă să implementezi exact specificul hardware original din 1971.
+
+Intel 4004 nu era doar un simplu procesor pe 4 biți; avea o arhitectură fascinantă, bazată pe concepte care stau la baza microprocesoarelor moderne, dar adaptate la tehnologia de acum 55 de ani.
+
+Pentru a fi 100% fideli originalului, trebuie să implementăm **caracteristicile tehnice reale ale lui Intel 4004**:
+
+---
+
+### 🏛️ Arhitectura Reală Intel 4004 (Specificații Tehnice)
+
+1. **Program Counter (PC) pe 12 biți**:
+* Originalul putea adresa până la **4 KB de memorie ROM** ($2^{12} = 4096$ locații). Asta înseamnă că PC-ul nostru nu mai poate fi pe 8 biți.
+
+
+2. **Instrucțiuni pe 1 sau 2 octeți**:
+* Unele instrucțiuni din 4004 ocupă 1 octet (8 biți), iar altele (cum ar fi salturile lungi sau încărcarea de date imediate pe 8 biți) ocupă **2 octeți** în ROM (primul octet este opcode-ul, al doilea este operandul/adresa).
+
+
+3. **Bancul de 16 registre de 4 biți, cuplate în Perechi (Register Pairs)**:
+* Cele 16 registre (`R0` până la `R15`) puteau fi folosite individual ca valori pe 4 biți sau cuplate în **8 perechi de câte 8 biți** pentru a ține adrese sau date mai mari:
+* `P0` = R0, R1
+* `P1` = R2, R3
+* `P2` = R4, R5
+* `P3` = R6, R7
+* `P4` = R8, R9
+* `P5` = R10, R11
+* `P6` = R12, R13
+* `P7` = R14, R15
+
+
+
+
+4. **Stiva hardware dedicată (3 niveluri + PC)**:
+* Intel 4004 avea o stivă internă fixă cu o adâncime de **3 niveluri** (plus nivelul curent al PC-ului), special concepută pentru subrutine (`CALL` / `RET`).
+
+
+5. **Arhitectură Harvard (ROM și RAM separate)**:
+* Memoria de program (ROM) era separată de memoria de date (RAM), ambele având spații de adresare distincte.
+
+
+
+---
+
+### 💻 Cum arată structura noului nostru CPU (`Intel4004`) în Rust?
+
+Pentru a reflecta exact hardware-ul original, structura procesorului va arăta cam așa:
+
+```rust
+struct Intel4004 {
+    ac: u8,             // Acumulatorul pe 4 biți (0x0..=0xF)
+    cy: bool,           // Flag de Carry (Transport) pe 1 bit
+    regs: [u8; 16],     // 16 registre individuale pe 4 biți (R0..R15)
+    pc: u16,            // Program Counter pe 12 biți (0x000..=0xFFF)
+    stack: [u16; 3],    // Stivă hardware pe 3 niveluri pentru subrutine
+    sp: usize,          // Pointer pentru stivă (0..=2)
+    rom: [u8; 4096],    // Spațiu ROM de 4 KB
+    ram: [[u8; 16]; 4], // Memorie RAM organizată în registre de 16 caractere
+}
+
+```
+
+### Cum procedăm cu cele 46 de instrucțiuni?
+
+Deoarece setul complet conține 46 de instrucțiuni (inclusiv cele de manipulare I/O, control RAM, registre indexate, rotații ale acumulatorului etc.), cel mai elegant este să le implementăm **pe categorii**:
+
+1. **Faza 1**: Structura de bază cu PC pe 12 biți, gestionarea registrelor în perechi și stiva pe 3 niveluri.
+2. **Faza 2**: Setul de instrucțiuni de transfer de date și aritmetice de bază (`ADD`, `SUB`, `LD`, `ST`, `FIM` - Fetch Immediate).
+3. **Faza 3**: Instrucțiunile de salturi și subrutine (`JUN`, `JMS` / Call, `BBL` / Return with Accumulator).
+4. **Faza 4**: Setul complet de 46 instrucțiuni și un asamblor dedicat pentru sintaxa oficială Intel 4004.
+
+Ești pregătit să construim adevăratul **Intel 4004** de la zero în Rust? Începem cu noua structură a procesorului și logica de citire pe 12 biți?
