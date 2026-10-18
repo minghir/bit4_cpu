@@ -1,0 +1,23 @@
+# ===================================================
+# Program de test 4-bit cu LDI, SUB și JZ
+# ===================================================
+
+# 1. Încarcă valoarea 3 direct în Acumulator
+63    # LDI 3
+
+# 2. Scade valoarea din RAM[0] (care este tot 3)
+50    # SUB 0  (AC devine 0, zero_flag devine true)
+
+# 3. Dacă AC este zero (zero_flag == true), sari la adresa 5
+76    # JZ 5
+
+# 4. (Ramura în care AC NU era zero - nu ar trebui să ajungă aici)
+69    # LDI 9
+40    # OUT 0
+00    # HALT
+
+# 5. Adresa de destinație a saltului JZ: am ajuns aici pentru că scăderea a dat zero!
+6F    # LDI 15 (F)
+22    # STORE 2 (Salvăm F în RAM[2])
+42    # OUT 2   (Afișăm RAM[2])
+00    # HALT
